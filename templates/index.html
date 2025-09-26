@@ -110,8 +110,9 @@
                 <h1 class="text-xl font-bold">Chat</h1>
             </div>
             <button
+                id = "clear"
                 class="w-full bg-primary text-white py-2 px-4 rounded-lg flex items-center justify-center font-semibold mb-6">
-                <span class="material-icons mr-2">add</span> New Chat
+                Clear
             </button>
             <nav class="flex-grow">
                 <div id="uploaded-files-display" class="mb-4">
@@ -289,10 +290,10 @@
                                         const link = document.createElement('a');
                                         link.classList.add('px-2', 'py-1', 'bg-gray-200', 'rounded-md', 'text-gray-600', 'text-xs', 'no-underline', 'hover:bg-gray-300', 'transition-colors', 'flex', 'items-center', 'gap-1');
                                         link.style.cursor = 'pointer';
-                                        console.log(src.source_content);
+                                        console.log(src);
                                         if (src.type === 'pdf') {
                                             link.target = "_blank";
-                                            link.href = `/temp/${src.pdf_filename}#page=${src.page_num}`;
+                                            link.href = `/temp/${src.source_filename}#page=${src.page_num}`;
                                             link.innerHTML = `<span class="material-icons text-sm">picture_as_pdf</span> PDF p.${src.page_num}`;
 
                                             // --- 👇 FIXED: DOCX link now robustly checks for content ---
@@ -300,7 +301,7 @@
                                             link.innerHTML = `<span class="material-icons text-sm">description</span> DOCX #${src.page_num}`;
                                             link.href = 'javascript:void(0)';
                                             link.onclick = () => {
-                                                modalTitle.textContent = `Source from: ${src.pdf_filename}`;
+                                                modalTitle.textContent = `Source from: ${src.source_filename}`;
                                                 // Check if text_chunk exists and is a valid string
                                                 if (src.source_content && typeof src.source_content === 'string') {
                                                     modalContent.innerHTML = `<p>${src.source_content.replace(/\n/g, '<br>')}</p>`;
@@ -315,12 +316,12 @@
                                         } else if (src.type === 'audio') {
                                             link.href = 'javascript:void(0)';
                                             link.innerHTML = `<span class="material-icons text-sm">audiotrack</span> ${formatTime(src.start_time)} - ${formatTime(src.end_time)}`;
-                                            link.title = src.pdf_filename;
+                                            link.title = src.source_filename;
                                             link.onclick = () => {
                                                 audioPlayerContainer.style.display = 'block';
                                                 const currentSrc = audioPlayer.currentSrc.split('/').pop();
-                                                if (decodeURIComponent(currentSrc) !== src.pdf_filename) {
-                                                    audioPlayer.src = `/temp/${src.pdf_filename}`;
+                                                if (decodeURIComponent(currentSrc) !== src.source_filename) {
+                                                    audioPlayer.src = `/temp/${src.source_filename}`;
                                                 }
                                                 audioPlayer.currentTime = src.start_time;
                                                 audioPlayer.play();
@@ -440,6 +441,13 @@
                 chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
                 return messageElement;
             }
+        });
+
+        const clear = document.getElementById('clear');
+        clear.addEventListener('click', async () => {
+            await fetch('/clear-session', { method: 'POST' });
+            // reload
+            window.location.reload();
         });
     </script>
 </body>
